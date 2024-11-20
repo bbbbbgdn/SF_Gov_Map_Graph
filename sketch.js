@@ -44,87 +44,8 @@ let graphData;
 // Function to determine orbit level based on node type
 
 
-function getOrbitLevel(type) {
-  switch (type.toLowerCase()) {
-    case 'civilian':
-      return 0;
-    case 'mayor':
-      return 1;
-    case 'department':
-      return 2;
-    case 'departamenthead':
-      return 3;
-    case 'advisory':
-      return 3;
-    case 'commission':
-      return 2;
-    default:
-      return 4;
-  }
-}
-
-// Function to determine connection type based on relation
-function getConnectionType(relation) {
-  switch (relation.toLowerCase()) {
-    case 'reports_to':
-      return 'solid';
-    case 'appoints':
-      return 'dashed';
-    // Add more cases as needed
-    default:
-      return 'solid';
-  }
-}
-
-// Function to transform the JSON data
-function transformData(rawData) {
-  const transformedNodes = [];
-
-  // Transform nodes from each category
-  const categories = ['departamentHead', 'advisory', 'commission', 'department'];
-  
-  categories.forEach(category => {
-    if (rawData[category]) {
-      rawData[category].forEach(node => {
-        transformedNodes.push({
-          id: node.id,
-          label: node.name,
-          type: category,
-          description: node.description,
-          seats: node.seats,
-          orbitLevel: getOrbitLevel(category)
-        });
-      });
-    }
-  });
-
-  // Transform relationships into connections
-  const transformedConnections = [];
-  
-  categories.forEach(category => {
-    if (rawData[category]) {
-      rawData[category].forEach(node => {
-        if (node.relationship) {
-          node.relationship.forEach(rel => {
-            transformedConnections.push({
-              sourceId: node.id,
-              targetId: rel.target,
-              type: getConnectionType(rel.type)
-            });
-          });
-        }
-      });
-    }
-  });
-
-  return {
-    nodes: transformedNodes,
-    connections: transformedConnections
-  };
-}
-
 // Node Class
-class Node {
+class sfNode {
   constructor(p, { id, label, type }) {
     this.p = p; // Reference to p5 instance
     this.id = id;
@@ -132,30 +53,44 @@ class Node {
     this.type = type; // 'central', 'elected', 'appointed', 'department' 
     this.x = 0;
     this.y = 0;
-    this.size = 10;
+    this.size = 15;
     this.color = this.assignColor();
     this.shape = this.assignShape();
-    this.orbit = 5;
+    this.orbit = null;
   }
 
   assignColor() {
     switch (this.type) {
-      case 'central':
-        return this.p.color(255, 165, 0); // Orange
-      case 'elected':
+      case 'civilian':
+        return this.p.color(255, 140, 0); // Orange
+      case 'elected': 
         return this.p.color(30, 144, 255); // Dodger Blue
-      case 'appointed':
+      case 'commission':
         return this.p.color(34, 139, 34); // Forest Green
       case 'department':
         return this.p.color(128, 0, 128); // Purple
+      case 'advisory':
+        return this.p.color(255, 20, 147); // Deep Pink
       default:
-        return this.p.color(200);
+        return this.p.color(100); // Gray
     }
   }
 
   assignShape() {
-    // For simplicity, all nodes are circles. Extend this method to assign different shapes.
-    return 'circle';
+    switch (this.type) {
+      case 'civilian':
+        return 'circle';
+      case 'elected':
+        return 'circle'; 
+      case 'commission':
+        return 'diamond';
+      case 'department':
+        return 'square';
+      case 'advisory':
+        return 'circle';
+      default:
+        return 'circle';
+    }
   }
 
   setPosition(x, y) {
@@ -169,12 +104,15 @@ class Node {
 
   drawNode() {
     this.p.push();
-    this.p.noStroke();
+    // this.p.noStroke();
     this.p.fill(this.color);
     if (this.shape === 'circle') {
       this.p.ellipse(this.x, this.y, this.size, this.size);
+    } else if (this.shape === 'square') {
+      this.p.rect(this.x, this.y, this.size, this.size);
+    } else if (this.shape === 'diamond') {
+      this.p.ellipse(this.x, this.y, this.size, this.size/2);
     }
-    // Add more shapes as needed
     this.p.pop();
   }
 
@@ -196,12 +134,27 @@ class Connection {
     this.p.push();
     this.p.stroke(150);
     this.p.strokeWeight(2);
+
+    // Debug: Log the type of connection
+    console.log('Connection type:', this.type);
+
     if (this.type === 'dashed') {
-      this.p.drawingContext.setLineDash([5, 5]);
+        this.p.drawingContext.setLineDash([5, 5]);
     } else {
-      this.p.drawingContext.setLineDash([]);
+        this.p.drawingContext.setLineDash([]);
     }
-    this.p.line(this.source.x, this.source.y, this.target.x, this.target.y);
+
+    // Debug: Log the source and target positions
+    console.log('Source:', this.source);
+    console.log('Target:', this.target);
+
+    // Check if source and target are defined
+    if (this.source && this.target) {
+        this.p.line(this.source.x, this.source.y, this.target.x, this.target.y);
+    } else {
+        console.log('Source or target is undefined');
+    }
+
     this.p.pop();
   }
 }

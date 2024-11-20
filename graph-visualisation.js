@@ -24,6 +24,10 @@ class GraphVisualization {
       this.currentMode = 'default';
       this.selectedNode = null;
       this.orbitManager = new OrbitManager();
+      this.orbitConfig = {
+          baseRadius: 0,
+          spacing: 60,
+      };
       this.init();
     }
   
@@ -32,13 +36,12 @@ class GraphVisualization {
         const nodePositions = this.orbitManager.calculateNodePositions(this.data.nodes, {
             centerX: this.width / 2,
             centerY: this.height / 2,
-            baseRadius: 10,
-            spacing: 10,
+            ...this.orbitConfig
         });
   
         // Create nodes using node positions
         nodePositions.forEach(nodeData => {
-            const node = new Node(this.p, nodeData);
+            const node = new sfNode(this.p, nodeData);
             node.setPosition(nodeData.x, nodeData.y);
             this.nodes.push(node);
             this.nodesMap[node.id] = node;
@@ -49,6 +52,8 @@ class GraphVisualization {
             const connection = new Connection(this.p, connData, this.nodesMap);
             this.connections.push(connection);
         });
+
+        console.log('this.connections', this.connections);
     }
   
     draw() {
@@ -56,7 +61,7 @@ class GraphVisualization {
     //   this.orbits.forEach(orbit => orbit.drawOrbit());
   
       // Draw Connections
-    //   this.connections.forEach(connection => connection.drawConnection());
+      this.connections.forEach(connection => connection.drawConnection());
   
       // Draw Nodes
       this.nodes.forEach(node => node.drawNode());
@@ -88,6 +93,15 @@ class GraphVisualization {
       });
   
       if (clickedNode) {
+        console.log({
+            label: clickedNode.label,
+            type: clickedNode.type,
+            size: clickedNode.size,
+            color: clickedNode.color,
+            shape: clickedNode.shape,
+            id: clickedNode.id,
+        });
+        
         this.selectedNode = clickedNode;
         this.switchMode('zoom');
       } else {
@@ -107,6 +121,7 @@ class GraphVisualization {
     zoomIntoNode(node) {
       // For simplicity, this example doesn't implement actual zooming.
       // You can implement camera transformations or reposition nodes here.
+
       console.log(`Zooming into node: ${node.label}`);
       // Implement highlighting and opacity changes as needed.
     }
@@ -120,7 +135,7 @@ class GraphVisualization {
     handleZoom(amount) {
       // Implement zoom functionality (e.g., scaling or translating the view)
       // This example does not include actual zooming logic.
-      console.log(`Zoom amount: ${amount}`);
+      // console.log(`Zoom amount: ${amount}`);
     }
   
     windowResized(newWidth, newHeight) {
@@ -129,12 +144,11 @@ class GraphVisualization {
       this.width = newWidth;
       this.height = newHeight;
       
-      // Recalculate all node positions
+      // Reuse same configuration, only update center position
       const nodePositions = this.orbitManager.calculateNodePositions(this.data.nodes, {
           centerX: this.width / 2,
           centerY: this.height / 2,
-          baseRadius: 10,
-          spacing: 2,
+          ...this.orbitConfig
       });
       
       nodePositions.forEach(nodeData => {
