@@ -3,40 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>San Francisco Government Visualization</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-    #defaultCanvas0 {
-      display: block;
-    }
-    .tooltip {
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 4px;
-      pointer-events: none;
-      font-size: 12px;
-      visibility: hidden;
-    }
-  </style>
+  <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
-    SF GRAPH
   <!-- Tooltip Element -->
   <div id="tooltip" class="tooltip"></div>
 
   <!-- p5.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
 
-
   
-  <script src="TransformData.js"></script>
-  <script src="OrbitManager.js"></script>
-  <script src="graph-visualisation.js"></script>
-  <script src="sketch.js"></script>
+  <script src="scripts/transform-data.js"></script>
+  <script src="scripts/orbit-manager.js"></script>
+  <script src="scripts/graph-visualisation.js"></script>
+
+  <!-- Main Sketch -->
+  <script src="scripts/sketch.js"></script>
 
 </body>
 </html>

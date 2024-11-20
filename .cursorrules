@@ -1,0 +1,110 @@
+project:
+  name: "San Francisco Government Visualization"
+  description: "A web-based visualization tool for San Francisco government structures using p5.js."
+  
+  technology:
+    languages:
+      - JavaScript
+      - HTML
+      - CSS
+    libraries:
+      - p5.js
+    tools:
+      - Node.js
+      - npm
+    versionControl:
+      system: Git
+      repository: "Your Git Repository URL"
+
+  style:
+    indentation: "2 spaces"
+    namingConventions:
+      variables: "camelCase"
+      functions: "camelCase"
+      classes: "PascalCase"
+      files: "kebab-case.js"
+    formatting:
+      maxLineLength: 100
+      semicolons: "always"
+      quotes: "single"
+    comments:
+      style: "JSDoc for functions and classes"
+      requireComments: true
+    linting:
+      tool: ESLint
+      config: "eslint-config-airbnb"
+    readability:
+      avoidOverengineering: true
+      preferConciseness: true
+
+  architecture:
+    directoryStructure:
+      root:
+        - "index.html"
+        - ".gitignore"
+        - "data.json"
+        - "styles/"
+          - "styles.css"
+        - "scripts/"
+          - "sketch.js"
+          - "GraphVisualization.js"
+          - "OrbitManager.js"
+          - "TransformData.js"
+        - "libs/"
+          - "p5.min.js"
+    moduleOrganization:
+      visualization:
+        description: "Handles rendering of graph nodes and connections."
+        files:
+          - "GraphVisualization.js"
+          - "OrbitManager.js"
+      data:
+        description: "Responsible for data transformation and management."
+        files:
+          - "TransformData.js"
+      core:
+        description: "Includes core classes and utilities."
+        files:
+          - "sfNode.js"
+          - "Connection.js"
+    dataFlow:
+      - "Raw data is stored in data.json."
+      - "TransformData.js processes and transforms raw data."
+      - "GraphVisualization.js and OrbitManager.js handle the visualization logic."
+      - "sketch.js initializes the p5.js sketch and integrates all components."
+
+  bestPractices:
+    - "Keep components modular and reusable."
+    - "Avoid global variables; use encapsulation."
+    - "Ensure responsive design for different screen sizes."
+    - "Optimize performance for smooth interactions."
+    - "Maintain clear and consistent documentation."
+    - "Avoid overengineering; prefer simple and readable solutions."
+    - "Favor concise code that maintains clarity."
+
+  testing:
+    strategy: "Manual testing initially; consider adding automated tests."
+    tools:
+      - "Jest for unit testing (future enhancement)"
+    guidelines:
+      - "Test all interactive features thoroughly."
+      - "Ensure data transformations are accurate."
+
+  deployment:
+    environment: "Static hosting (e.g., GitHub Pages, Netlify)"
+    steps:
+      - "Build the project using any necessary build tools."
+      - "Deploy the build directory to the chosen hosting service."
+      - "Ensure environment variables are managed securely."
+
+  maintenance:
+    guidelines:
+      - "Regularly update dependencies to their latest stable versions."
+      - "Monitor for any bugs or issues reported by users."
+      - "Refactor code as needed to improve performance and readability."
+
+  contributors:
+    guidelines:
+      - "Follow the coding style and architectural guidelines outlined in this file."
+      - "Submit pull requests for code reviews."
+      - "Write meaningful commit messages."
