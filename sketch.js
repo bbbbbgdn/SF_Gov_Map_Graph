@@ -1,0 +1,301 @@
+// sketch.js
+let graphData;
+
+// Example data
+// graphData = {
+//   "departamentHead": [
+//     {
+//       "id": "070d2611-a338-481d-a367-f3213cd8dd5c",
+//       "name": "Municipal Transportation Agency, Executive Director/CEO",
+//       "description": null,
+//     }
+//   ],
+//   "advisory": [
+//     {
+//       "id": "04702151-1370-40da-9812-92aecc1f13c9",
+//       "name": "Commission on Aging Advisory Council",
+//       "legalSource": "Administrative Code Sec. 5.6-4",
+//       "url": "https://www.sfhsa.org/about/commissions-committees/advisory-council-disability-and-aging-services-commission",
+//       "description": null,
+//     }
+//   ],
+//   "commission": [
+//     {
+//       "id": "057d151b-986e-4c59-abaa-38a04bd0d4a3",
+//       "name": "Homelessness Oversight Commission",
+//       "legalSource": "Charter Sec. 4.133",
+//       "url": "https://hsh.sfgov.org/commission-and-committees/",
+//       "description": null,
+//     }
+//   ],
+//   "department": [
+//     {
+//       "id": "06631b00-35fe-4d63-8018-e6357ff73d92",
+//       "name": "Department of Police Accountability",
+//       "legalSource": "Campaign & Governmental Conduct Code Sec. 3.1-103(b)(1)",
+//       "url": null,
+//       "description": null,
+//       "departmentHead": null,
+//       "numEmployees": null
+//     }
+//   ]
+// };
+
+// Function to determine orbit level based on node type
+
+
+function getOrbitLevel(type) {
+  switch (type.toLowerCase()) {
+    case 'civilian':
+      return 0;
+    case 'mayor':
+      return 1;
+    case 'department':
+      return 2;
+    case 'departamenthead':
+      return 3;
+    case 'advisory':
+      return 3;
+    case 'commission':
+      return 2;
+    default:
+      return 4;
+  }
+}
+
+// Function to determine connection type based on relation
+function getConnectionType(relation) {
+  switch (relation.toLowerCase()) {
+    case 'reports_to':
+      return 'solid';
+    case 'appoints':
+      return 'dashed';
+    // Add more cases as needed
+    default:
+      return 'solid';
+  }
+}
+
+// Function to transform the JSON data
+function transformData(rawData) {
+  const transformedNodes = [];
+
+  // Transform nodes from each category
+  const categories = ['departamentHead', 'advisory', 'commission', 'department'];
+  
+  categories.forEach(category => {
+    if (rawData[category]) {
+      rawData[category].forEach(node => {
+        transformedNodes.push({
+          id: node.id,
+          label: node.name,
+          type: category,
+          description: node.description,
+          seats: node.seats,
+          orbitLevel: getOrbitLevel(category)
+        });
+      });
+    }
+  });
+
+  // Transform relationships into connections
+  const transformedConnections = [];
+  
+  categories.forEach(category => {
+    if (rawData[category]) {
+      rawData[category].forEach(node => {
+        if (node.relationship) {
+          node.relationship.forEach(rel => {
+            transformedConnections.push({
+              sourceId: node.id,
+              targetId: rel.target,
+              type: getConnectionType(rel.type)
+            });
+          });
+        }
+      });
+    }
+  });
+
+  return {
+    nodes: transformedNodes,
+    connections: transformedConnections
+  };
+}
+
+// Node Class
+class Node {
+  constructor(p, { id, label, type }) {
+    this.p = p; // Reference to p5 instance
+    this.id = id;
+    this.label = label;
+    this.type = type; // 'central', 'elected', 'appointed', 'department' 
+    this.x = 0;
+    this.y = 0;
+    this.size = 10;
+    this.color = this.assignColor();
+    this.shape = this.assignShape();
+    this.orbit = 5;
+  }
+
+  assignColor() {
+    switch (this.type) {
+      case 'central':
+        return this.p.color(255, 165, 0); // Orange
+      case 'elected':
+        return this.p.color(30, 144, 255); // Dodger Blue
+      case 'appointed':
+        return this.p.color(34, 139, 34); // Forest Green
+      case 'department':
+        return this.p.color(128, 0, 128); // Purple
+      default:
+        return this.p.color(200);
+    }
+  }
+
+  assignShape() {
+    // For simplicity, all nodes are circles. Extend this method to assign different shapes.
+    return 'circle';
+  }
+
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  setOrbit(orbit) {
+    this.orbit = orbit;
+  }
+
+  drawNode() {
+    this.p.push();
+    this.p.noStroke();
+    this.p.fill(this.color);
+    if (this.shape === 'circle') {
+      this.p.ellipse(this.x, this.y, this.size, this.size);
+    }
+    // Add more shapes as needed
+    this.p.pop();
+  }
+
+  isMouseOver(mx, my) {
+    return this.p.dist(mx, my, this.x, this.y) < this.size / 2;
+  }
+}
+
+// Connection Class
+class Connection {
+  constructor(p, { sourceId, targetId, type }, nodesMap) {
+    this.p = p; // Reference to p5 instance
+    this.source = nodesMap[sourceId];
+    this.target = nodesMap[targetId];
+    this.type = type; // 'solid', 'dashed', etc.
+  }
+
+  drawConnection() {
+    this.p.push();
+    this.p.stroke(150);
+    this.p.strokeWeight(2);
+    if (this.type === 'dashed') {
+      this.p.drawingContext.setLineDash([5, 5]);
+    } else {
+      this.p.drawingContext.setLineDash([]);
+    }
+    this.p.line(this.source.x, this.source.y, this.target.x, this.target.y);
+    this.p.pop();
+  }
+}
+
+// // Orbit Class
+// class Orbit {
+//   constructor(p, centerNode, level, totalNodes) {
+//     this.p = p; // Reference to p5 instance
+//     this.center = centerNode;
+//     this.level = level;
+//     this.radius = 10 * level/100; // Adjust spacing as needed
+//     this.nodes = [];
+//     this.totalNodes = totalNodes;
+//   }
+
+//   addNode(node, index) {
+//     this.nodes.push(node);
+//     node.setOrbit(this);
+//     const angle = (this.p.TWO_PI / this.totalNodes) * index;
+//     node.setPosition(
+//       this.center.x + this.radius * this.p.cos(angle),
+//       this.center.y + this.radius * this.p.sin(angle)
+//     );
+//   }
+
+//   drawOrbit() {
+//     this.p.push();
+//     this.p.noFill();
+//     this.p.stroke(200, 200, 200, 50);
+//     this.p.strokeWeight(1);
+//     this.p.ellipse(this.center.x, this.center.y, this.radius * 2, this.radius * 2);
+//     this.p.pop();
+//   }
+// }
+
+
+
+// p5.js Sketch in Instance Mode
+const sketch = (p) => {
+  let graph;
+
+  p.preload = () => {
+    if (graphData === undefined) {
+      graphData = p.loadJSON('./data.json');
+    }
+  };
+
+  p.setup = () => {
+    p.print('graphData', graphData);
+
+    p.createCanvas(window.innerWidth, window.innerHeight);
+    graphData = transformData(graphData);
+    graph = new GraphVisualization(p, graphData, p.width, p.height);
+  };
+
+  p.draw = () => {
+    p.background(30);
+    if (graph) {
+      graph.draw();
+    } else {
+      // Draw loading state
+      p.push();
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text('Loading...', p.width/2, p.height/2);
+      p.pop();
+    }
+  };
+
+  p.windowResized = () => {
+    // alert('window resized'); 
+    p.resizeCanvas(window.innerWidth, window.innerHeight);
+    if (graph) {
+      graph.windowResized(p.width, p.height); 
+    }
+  };
+
+  p.mouseMoved = () => {
+    if (graph) {
+      graph.handleHover(p.mouseX, p.mouseY);
+    }
+  };
+
+  p.mouseClicked = () => {
+    if (graph) {
+      graph.handleClick(p.mouseX, p.mouseY);
+    }
+  };
+
+  p.mouseWheel = (event) => {
+    if (graph) {
+      graph.handleZoom(event.delta);
+    }
+  };
+};
+
+// Initialize p5.js in Instance Mode
+new p5(sketch);  
