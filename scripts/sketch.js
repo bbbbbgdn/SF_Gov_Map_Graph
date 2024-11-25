@@ -1,45 +1,7 @@
 // sketch.js
 let graphData;
 
-// Example data
-// graphData = {
-//   "departamentHead": [
-//     {
-//       "id": "070d2611-a338-481d-a367-f3213cd8dd5c",
-//       "name": "Municipal Transportation Agency, Executive Director/CEO",
-//       "description": null,
-//     }
-//   ],
-//   "advisory": [
-//     {
-//       "id": "04702151-1370-40da-9812-92aecc1f13c9",
-//       "name": "Commission on Aging Advisory Council",
-//       "legalSource": "Administrative Code Sec. 5.6-4",
-//       "url": "https://www.sfhsa.org/about/commissions-committees/advisory-council-disability-and-aging-services-commission",
-//       "description": null,
-//     }
-//   ],
-//   "commission": [
-//     {
-//       "id": "057d151b-986e-4c59-abaa-38a04bd0d4a3",
-//       "name": "Homelessness Oversight Commission",
-//       "legalSource": "Charter Sec. 4.133",
-//       "url": "https://hsh.sfgov.org/commission-and-committees/",
-//       "description": null,
-//     }
-//   ],
-//   "department": [
-//     {
-//       "id": "06631b00-35fe-4d63-8018-e6357ff73d92",
-//       "name": "Department of Police Accountability",
-//       "legalSource": "Campaign & Governmental Conduct Code Sec. 3.1-103(b)(1)",
-//       "url": null,
-//       "description": null,
-//       "departmentHead": null,
-//       "numEmployees": null
-//     }
-//   ]
-// };
+
 
 // Function to determine orbit level based on node type
 
@@ -71,6 +33,10 @@ class sfNode {
         return this.p.color(128, 0, 128); // Purple
       case 'advisory':
         return this.p.color(255, 20, 147); // Deep Pink
+      case 'departamentHead':
+        return this.p.color(255, 165, 0); // Orange
+      case 'commissioner':
+        return this.p.color(255, 215, 0); // Gold
       default:
         return this.p.color(100); // Gray
     }
@@ -109,6 +75,7 @@ class sfNode {
     if (this.shape === 'circle') {
       this.p.ellipse(this.x, this.y, this.size, this.size);
     } else if (this.shape === 'square') {
+      this.p.rectMode(this.p.CENTER);
       this.p.rect(this.x, this.y, this.size, this.size);
     } else if (this.shape === 'diamond') {
       this.p.ellipse(this.x, this.y, this.size, this.size/2);
@@ -131,29 +98,23 @@ class Connection {
   }
 
   drawConnection() {
-    this.p.push();
-    this.p.stroke(150);
-    this.p.strokeWeight(2);
+    // Ensure source and target are defined
+    if (!this.source || !this.target) {
+      console.warn('Cannot draw connection: source або target є невизначеним.');
+      return;
+    }
 
-    // Debug: Log the type of connection
-    console.log('Connection type:', this.type);
+    this.p.push();
+    this.p.stroke(20);
+    this.p.strokeWeight(1);
 
     if (this.type === 'dashed') {
-        this.p.drawingContext.setLineDash([5, 5]);
+        this.p.drawingContext.setLineDash([3, 2]);
     } else {
         this.p.drawingContext.setLineDash([]);
     }
 
-    // Debug: Log the source and target positions
-    console.log('Source:', this.source);
-    console.log('Target:', this.target);
-
-    // Check if source and target are defined
-    if (this.source && this.target) {
-        this.p.line(this.source.x, this.source.y, this.target.x, this.target.y);
-    } else {
-        console.log('Source or target is undefined');
-    }
+    this.p.line(this.source.x, this.source.y, this.target.x, this.target.y);
 
     this.p.pop();
   }
@@ -193,12 +154,16 @@ class Connection {
 
 
 // p5.js Sketch in Instance Mode
+
+
 const sketch = (p) => {
   let graph;
 
   p.preload = () => {
     if (graphData === undefined) {
-      graphData = p.loadJSON('./data.json');
+      graphData = p.loadJSON('./data_2.json');
+      // https://sfg-civlab-org.vercel.app/data.json
+      // graphData = p.loadJSON('https://sfg-civlab-org.vercel.app/data.json');
     }
   };
 
@@ -211,7 +176,7 @@ const sketch = (p) => {
   };
 
   p.draw = () => {
-    p.background(30);
+    // p.background(30);
     if (graph) {
       graph.draw();
     } else {
@@ -225,6 +190,7 @@ const sketch = (p) => {
 
   p.windowResized = () => {
     // alert('window resized'); 
+    p.clear();
     p.resizeCanvas(window.innerWidth, window.innerHeight);
     if (graph) {
       graph.windowResized(p.width, p.height); 

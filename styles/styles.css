@@ -1,6 +1,7 @@
 body {
     margin: 0;
     overflow: hidden;
+    background-color: rgb(60, 60, 60);
   }
   #defaultCanvas0 {
     display: block;

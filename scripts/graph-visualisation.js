@@ -23,15 +23,21 @@ class GraphVisualization {
       this.tooltip = this.p.select('#tooltip');
       this.currentMode = 'default';
       this.selectedNode = null;
+      
+      // Add hoveredNode to track the currently hovered node
+      this.hoveredNode = null;
+
       this.orbitManager = new OrbitManager();
       this.orbitConfig = {
           baseRadius: 0,
-          spacing: 60,
+          spacing: 70,
       };
       this.init();
     }
   
     init() {
+        console.log('this.data', this.data)
+
         // Position all nodes using OrbitManager
         const nodePositions = this.orbitManager.calculateNodePositions(this.data.nodes, {
             centerX: this.width / 2,
@@ -50,28 +56,44 @@ class GraphVisualization {
         // Create Connections
         this.data.connections.forEach(connData => {
             const connection = new Connection(this.p, connData, this.nodesMap);
-            this.connections.push(connection);
+            if (connection.source && connection.target) {
+                this.connections.push(connection);
+            } else {
+                console.warn(`Connection with sourceId: ${connData.sourceId} або targetId: ${connData.targetId} є невірним.`);
+            }
         });
 
         console.log('this.connections', this.connections);
     }
   
     draw() {
-    //   // Draw Orbits
-    //   this.orbits.forEach(orbit => orbit.drawOrbit());
-  
-      // Draw Connections
-      this.connections.forEach(connection => connection.drawConnection());
-  
-      // Draw Nodes
-      this.nodes.forEach(node => node.drawNode());
+        // Clear the canvas if needed
+        this.p.clear();
+
+        // Draw Connections only if a node is hovered
+        if (this.hoveredNode) {
+            this.connections.forEach(connection => {
+                if (
+                    (connection.source && connection.source.id === this.hoveredNode.id) ||
+                    (connection.target && connection.target.id === this.hoveredNode.id)
+                ) {
+                    connection.drawConnection();
+                }
+            });
+        }
+
+        // Draw Nodes
+        this.nodes.forEach(node => node.drawNode());
     }
   
     handleHover(mx, my) {
       let hovered = false;
+      this.hoveredNode = null;
+
       this.nodes.forEach(node => {
         if (node.isMouseOver(mx, my)) {
           hovered = true;
+          this.hoveredNode = node;
           this.tooltip
             .style('left', `${mx + 10}px`)
             .style('top', `${my + 10}px`)
@@ -139,8 +161,6 @@ class GraphVisualization {
     }
   
     windowResized(newWidth, newHeight) {
-        
-
       this.width = newWidth;
       this.height = newHeight;
       
