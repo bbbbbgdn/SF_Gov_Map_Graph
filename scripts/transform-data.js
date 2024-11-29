@@ -58,9 +58,9 @@ function getOrbitLevel(type) {
       case 'department':
         return 3;
         case 'departamenthead':
-          return 4;
+          return 5;
       case 'advisory':
-        return 5;
+        return 4;
       // case 'commissioner':
       //   return 6;
       default:

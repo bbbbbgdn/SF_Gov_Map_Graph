@@ -29,7 +29,6 @@ class GraphVisualization {
 
       this.orbitManager = new OrbitManager();
       this.orbitConfig = {
-          baseRadius: 0,
           spacing: 70,
       };
       this.init();
@@ -141,11 +140,18 @@ class GraphVisualization {
     }
   
     zoomIntoNode(node) {
-      // For simplicity, this example doesn't implement actual zooming.
-      // You can implement camera transformations or reposition nodes here.
+      // Get all directly connected nodes
+      const connectedNodes = this.connections
+        .filter(conn => conn.source === node || conn.target === node)
+        .map(conn => conn.source === node ? conn.target : conn.source);
 
-      console.log(`Zooming into node: ${node.label}`);
-      // Implement highlighting and opacity changes as needed.
+      console.log('Zooming into node:', {
+        selectedNode: node.label,
+        connectedNodes: connectedNodes.map(n => n.label)
+      });
+      
+      // TODO: Implement actual zooming using the zoomToFit function
+      // this.zoomToFit([node, ...connectedNodes]);
     }
   
     resetView() {

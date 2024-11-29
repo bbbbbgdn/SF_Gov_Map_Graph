@@ -12,8 +12,8 @@ class OrbitManager {
         const {
             centerX = 0,
             centerY = 0,
-            baseRadius = 2,
-            spacing = 1
+            baseRadius = 0,
+            spacing = 10
         } = options;
 
         // Group nodes by orbit level
